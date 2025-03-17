@@ -358,7 +358,7 @@ const syncEmails = async (): Promise<void> => {
 export const useEmails = (category: string = 'inbox') => {
   return useQuery({
     queryKey: ['emails', category],
-    queryFn: () => fetchEmails(category),
+    queryFn: () => fetchEmails(category)
   });
 };
 
@@ -366,14 +366,14 @@ export const useEmail = (id: string | undefined) => {
   return useQuery({
     queryKey: ['email', id],
     queryFn: () => fetchEmailById(id as string),
-    enabled: !!id,
+    enabled: !!id
   });
 };
 
 export const useEmailAccounts = () => {
   return useQuery({
     queryKey: ['emailAccounts'],
-    queryFn: fetchEmailAccounts,
+    queryFn: fetchEmailAccounts
   });
 };
 
@@ -397,7 +397,7 @@ export const useMarkEmailAsRead = () => {
         if (!oldData) return undefined;
         return { ...oldData, isRead: true };
       });
-    },
+    }
   });
 };
 
@@ -424,7 +424,7 @@ export const useToggleStarEmail = () => {
         if (!oldData) return undefined;
         return { ...oldData, isStarred };
       });
-    },
+    }
   });
 };
 
@@ -438,7 +438,7 @@ export const useAddEmailAccount = () => {
         if (!oldData) return [newAccount];
         return [...oldData, newAccount];
       });
-    },
+    }
   });
 };
 
@@ -451,6 +451,6 @@ export const useSyncEmails = () => {
       // Invalidate and refetch all email-related queries
       queryClient.invalidateQueries({ queryKey: ['emails'] });
       queryClient.invalidateQueries({ queryKey: ['emailAccounts'] });
-    },
+    }
   });
 };
