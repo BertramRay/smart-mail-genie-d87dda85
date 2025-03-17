@@ -1,319 +1,400 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+import { DashboardHeader } from '@/components/ui/custom/DashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertCircle, Mail, Key, Save, Plus, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, RefreshCw, Github } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
 const Settings = () => {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('accounts');
+  
+  // Sample email accounts
+  const [emailAccounts, setEmailAccounts] = useState([
+    { id: 1, name: 'Work Gmail', email: 'work@gmail.com', provider: 'gmail', lastSync: '10 minutes ago' },
+    { id: 2, name: 'Personal Outlook', email: 'personal@outlook.com', provider: 'outlook', lastSync: '2 hours ago' }
+  ]);
+  
+  // Sample processing rules
+  const [processingRules, setProcessingRules] = useState(
+    `# Email Processing Rules
+
+1. Star all emails from my boss (boss@company.com) and mark them as important.
+2. Automatically archive newsletters and promotions.
+3. For emails containing "invoice" or "payment", add label "Finance".
+4. If an email is from a client and mentions "urgent" or "ASAP", send an auto-reply saying "I've received your urgent message and will respond shortly".
+5. Summarize all emails longer than 300 words.
+    `
+  );
+  
+  // Form state for adding a new email account
+  const [newAccount, setNewAccount] = useState({
+    name: '',
+    email: '',
+    password: '',
+    server: '',
+    port: '',
+    provider: 'other'
+  });
+  
+  // Toggle states for automation settings
+  const [autoSettings, setAutoSettings] = useState({
+    autoSync: true,
+    syncInterval: '15',
+    autoReply: false,
+    processNewEmails: true
+  });
+  
+  const handleAddAccount = () => {
+    // In a real app, this would validate and send the data to the backend
+    toast({
+      title: 'Email Account Added',
+      description: `${newAccount.name} (${newAccount.email}) has been configured.`,
+    });
+    
+    // Reset form
+    setNewAccount({
+      name: '',
+      email: '',
+      password: '',
+      server: '',
+      port: '',
+      provider: 'other'
+    });
+  };
+  
+  const handleSaveRules = () => {
+    // In a real app, this would send the updated rules to the backend
+    toast({
+      title: 'Processing Rules Saved',
+      description: 'Your email processing rules have been updated.',
+    });
+  };
+  
+  const handleSaveSettings = () => {
+    // In a real app, this would send the updated settings to the backend
+    toast({
+      title: 'Settings Saved',
+      description: 'Your automation settings have been updated.',
+    });
+  };
+  
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-muted-foreground">Manage your account settings and preferences.</p>
-        </div>
+      <div className="flex flex-col h-screen">
+        <DashboardHeader />
         
-        <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full max-w-md grid-cols-4">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="mailboxes">Mailboxes</TabsTrigger>
-            <TabsTrigger value="rules">Rules</TabsTrigger>
-            <TabsTrigger value="account">Account</TabsTrigger>
-          </TabsList>
+        <div className="flex-1 container max-w-6xl py-6 space-y-8 overflow-auto">
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+            <p className="text-muted-foreground">
+              Configure your email accounts, processing rules, and application preferences.
+            </p>
+          </div>
           
-          <TabsContent value="profile" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your personal information.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>
-                      <Github className="h-8 w-8" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <Button variant="outline" size="sm">Change Avatar</Button>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" placeholder="John" defaultValue="John" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" placeholder="Doe" defaultValue="Doe" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="john.doe@example.com" defaultValue="john.doe@example.com" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="timezone">Timezone</Label>
-                  <Select defaultValue="UTC">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="UTC">UTC (Universal Time Coordinated)</SelectItem>
-                      <SelectItem value="EST">EST (Eastern Standard Time)</SelectItem>
-                      <SelectItem value="CST">CST (Central Standard Time)</SelectItem>
-                      <SelectItem value="PST">PST (Pacific Standard Time)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button type="submit">Save Changes</Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="mailboxes" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Email Accounts</CardTitle>
-                <CardDescription>
-                  Add and manage your connected email accounts.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="border border-border rounded-md p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-medium">Work Gmail</div>
-                        <div className="text-sm text-muted-foreground">john.doe@gmail.com</div>
-                        <div className="text-xs mt-1 text-muted-foreground">Last synced: 10 minutes ago</div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="ghost" title="Sync now">
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" title="Remove account">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-border rounded-md p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-medium">Personal Outlook</div>
-                        <div className="text-sm text-muted-foreground">john.personal@outlook.com</div>
-                        <div className="text-xs mt-1 text-muted-foreground">Last synced: 25 minutes ago</div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="ghost" title="Sync now">
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" title="Remove account">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <Button variant="outline" className="w-full">
-                    <Plus className="h-4 w-4 mr-2" />
-                    <span>Add New Email Account</span>
-                  </Button>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Sync Settings</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="font-medium">Auto Sync</div>
-                        <div className="text-sm text-muted-foreground">
-                          Automatically sync emails at regular intervals
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
+              <TabsTrigger value="accounts">Email Accounts</TabsTrigger>
+              <TabsTrigger value="rules">Processing Rules</TabsTrigger>
+              <TabsTrigger value="automation">Automation</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="accounts" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Connected Email Accounts</CardTitle>
+                  <CardDescription>
+                    Manage your connected email accounts for Smart Mail Genie.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {emailAccounts.map((account) => (
+                    <div 
+                      key={account.id} 
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 p-2 rounded-full">
+                          <Mail className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-medium">{account.name}</div>
+                          <div className="text-sm text-muted-foreground">{account.email}</div>
                         </div>
                       </div>
-                      <Switch defaultChecked />
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-muted-foreground">
+                          Last synced: {account.lastSync}
+                        </div>
+                        <Badge variant="outline" className="capitalize">
+                          {account.provider}
+                        </Badge>
+                        <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" className="w-full">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add GitHub Account
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Add New Email Account</CardTitle>
+                  <CardDescription>
+                    Connect a new email account using SMTP and IMAP settings.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="account-name">Account Name</Label>
+                      <Input 
+                        id="account-name"
+                        placeholder="e.g., Work Gmail"
+                        value={newAccount.name}
+                        onChange={(e) => setNewAccount({...newAccount, name: e.target.value})}
+                      />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="syncInterval">Sync Interval</Label>
-                      <Select defaultValue="15">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select interval" />
+                      <Label htmlFor="email-provider">Email Provider</Label>
+                      <Select 
+                        value={newAccount.provider}
+                        onValueChange={(value) => setNewAccount({...newAccount, provider: value})}
+                      >
+                        <SelectTrigger id="email-provider">
+                          <SelectValue placeholder="Select provider" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="5">Every 5 minutes</SelectItem>
-                          <SelectItem value="15">Every 15 minutes</SelectItem>
-                          <SelectItem value="30">Every 30 minutes</SelectItem>
-                          <SelectItem value="60">Every hour</SelectItem>
+                          <SelectItem value="gmail">Gmail</SelectItem>
+                          <SelectItem value="outlook">Outlook</SelectItem>
+                          <SelectItem value="yahoo">Yahoo</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="rules" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Processing Rules</CardTitle>
-                <CardDescription>
-                  Define custom AI rules for email processing.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="globalRules">Global Processing Rules</Label>
-                  <Textarea 
-                    id="globalRules" 
-                    placeholder="Enter your processing rules in natural language..." 
-                    className="min-h-40"
-                    defaultValue={`1. Star emails from my boss (boss@company.com) or that contain "urgent" in the subject.
-2. For emails about meeting requests, if I'm busy during the proposed time, send an automatic response suggesting alternative times.
-3. Add "Work" label to emails from domains ending with my company's domain.
-4. Forward emails from newsletter@updates.com to my personal email.`}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Write rules in plain language. The AI will interpret and apply them to your emails.
-                  </p>
-                </div>
-                
-                <div className="pt-4">
-                  <h3 className="text-lg font-medium mb-4">Rule Examples</h3>
-                  
-                  <div className="space-y-3 text-sm">
-                    <div className="p-3 bg-secondary/50 rounded-md">
-                      <div className="font-medium">Star important emails</div>
-                      <div className="text-muted-foreground mt-1">
-                        "Star emails containing words like 'urgent', 'important', or 'deadline'"
-                      </div>
-                    </div>
-                    
-                    <div className="p-3 bg-secondary/50 rounded-md">
-                      <div className="font-medium">Auto-categorize</div>
-                      <div className="text-muted-foreground mt-1">
-                        "Add 'Finance' label to emails from my bank or containing words like 'invoice', 'payment', or 'statement'"
-                      </div>
-                    </div>
-                    
-                    <div className="p-3 bg-secondary/50 rounded-md">
-                      <div className="font-medium">Smart replies</div>
-                      <div className="text-muted-foreground mt-1">
-                        "For emails asking about my availability, check my calendar and suggest free times"
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button type="submit">Save Rules</Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="account" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Settings</CardTitle>
-                <CardDescription>
-                  Manage your account preferences and security.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Notifications</h3>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="font-medium">Email Notifications</div>
-                        <div className="text-sm text-muted-foreground">
-                          Receive notifications about important events via email
-                        </div>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="font-medium">Browser Notifications</div>
-                        <div className="text-sm text-muted-foreground">
-                          Receive browser notifications for new emails
-                        </div>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Security</h3>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="password">Change Password</Label>
-                    <Input id="password" type="password" placeholder="Current password" />
+                    <Label htmlFor="email-address">Email Address</Label>
+                    <Input 
+                      id="email-address"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={newAccount.email}
+                      onChange={(e) => setNewAccount({...newAccount, email: e.target.value})}
+                    />
                   </div>
                   
                   <div className="space-y-2">
-                    <Input type="password" placeholder="New password" />
+                    <Label htmlFor="email-password">Password or App Password</Label>
+                    <Input 
+                      id="email-password"
+                      type="password"
+                      placeholder="Enter password or app password"
+                      value={newAccount.password}
+                      onChange={(e) => setNewAccount({...newAccount, password: e.target.value})}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      For services with 2FA, use an app password instead of your regular password.
+                    </p>
                   </div>
                   
+                  <Separator />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="imap-server">IMAP Server</Label>
+                      <Input 
+                        id="imap-server"
+                        placeholder="imap.example.com"
+                        value={newAccount.server}
+                        onChange={(e) => setNewAccount({...newAccount, server: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="imap-port">IMAP Port</Label>
+                      <Input 
+                        id="imap-port"
+                        placeholder="993"
+                        value={newAccount.port}
+                        onChange={(e) => setNewAccount({...newAccount, port: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Note</AlertTitle>
+                    <AlertDescription>
+                      For popular providers like Gmail and Outlook, you typically only need to provide your email and password. We'll auto-configure the server settings.
+                    </AlertDescription>
+                  </Alert>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={handleAddAccount} className="w-full">
+                    <Key className="mr-2 h-4 w-4" />
+                    Connect Email Account
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="rules" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Email Processing Rules</CardTitle>
+                  <CardDescription>
+                    Define custom rules for how Smart Mail Genie should process your emails.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Input type="password" placeholder="Confirm new password" />
+                    <Label htmlFor="rules-editor">Processing Rules</Label>
+                    <Textarea 
+                      id="rules-editor"
+                      placeholder="Enter your email processing rules in natural language..."
+                      className="font-mono min-h-[300px]"
+                      value={processingRules}
+                      onChange={(e) => setProcessingRules(e.target.value)}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Write your rules in plain language. The AI will interpret them to process your emails.
+                    </p>
                   </div>
                   
-                  <Button>Update Password</Button>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Connected Accounts</h3>
+                  <div className="bg-secondary/50 p-4 rounded-md space-y-2">
+                    <h3 className="font-medium">Rule Examples:</h3>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Star all emails from person@example.com</li>
+                      <li>Add label "Important" to emails containing the word "urgent"</li>
+                      <li>Auto-reply to client emails with "Thanks for your message, I'll get back to you soon"</li>
+                      <li>Archive all newsletter emails after 2 days</li>
+                      <li>Forward emails about invoices to accounting@mycompany.com</li>
+                    </ul>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={handleSaveRules} className="w-full">
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Processing Rules
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="automation" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Automation Settings</CardTitle>
+                  <CardDescription>
+                    Configure how frequently and when Smart Mail Genie should process your emails.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Automatic Email Synchronization</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Automatically check for new emails at regular intervals
+                      </p>
+                    </div>
+                    <Switch 
+                      checked={autoSettings.autoSync}
+                      onCheckedChange={(checked) => setAutoSettings({...autoSettings, autoSync: checked})}
+                    />
+                  </div>
+                  
+                  {autoSettings.autoSync && (
+                    <div className="ml-6 space-y-2">
+                      <Label htmlFor="sync-interval">Sync Interval (minutes)</Label>
+                      <Select 
+                        value={autoSettings.syncInterval}
+                        onValueChange={(value) => setAutoSettings({...autoSettings, syncInterval: value})}
+                      >
+                        <SelectTrigger id="sync-interval">
+                          <SelectValue placeholder="Select interval" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5 minutes</SelectItem>
+                          <SelectItem value="15">15 minutes</SelectItem>
+                          <SelectItem value="30">30 minutes</SelectItem>
+                          <SelectItem value="60">1 hour</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
+                  <Separator />
                   
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Github className="h-5 w-5" />
-                      <div>
-                        <div className="font-medium">GitHub</div>
-                        <div className="text-sm text-muted-foreground">Connected</div>
-                      </div>
+                    <div className="space-y-0.5">
+                      <Label>AI Processing for New Emails</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Apply AI analysis and rule processing to newly received emails
+                      </p>
                     </div>
-                    <Button variant="outline" size="sm">Disconnect</Button>
+                    <Switch 
+                      checked={autoSettings.processNewEmails}
+                      onCheckedChange={(checked) => setAutoSettings({...autoSettings, processNewEmails: checked})}
+                    />
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <Button variant="destructive">Delete Account</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Automatic Replies</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow the system to automatically send email replies based on rules
+                      </p>
+                    </div>
+                    <Switch 
+                      checked={autoSettings.autoReply}
+                      onCheckedChange={(checked) => setAutoSettings({...autoSettings, autoReply: checked})}
+                    />
+                  </div>
+                  
+                  {autoSettings.autoReply && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Caution</AlertTitle>
+                      <AlertDescription>
+                        Automatic replies will be sent based on your processing rules. Make sure your rules are accurate to avoid unwanted emails being sent.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={handleSaveSettings} className="w-full">
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Automation Settings
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </DashboardLayout>
   );

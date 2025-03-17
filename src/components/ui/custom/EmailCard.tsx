@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, Clock, Tag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { useToggleStarEmail } from '@/services/emailService';
 
 interface EmailCardProps {
   email: {
@@ -26,6 +27,13 @@ interface EmailCardProps {
 }
 
 export const EmailCard: React.FC<EmailCardProps> = ({ email }) => {
+  const { mutate: toggleStar } = useToggleStarEmail();
+  
+  const handleStarClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the card click from triggering
+    toggleStar({ id: email.id, isStarred: !email.isStarred });
+  };
+  
   return (
     <Card 
       className={`
@@ -51,12 +59,13 @@ export const EmailCard: React.FC<EmailCardProps> = ({ email }) => {
                 variant="ghost" 
                 size="icon" 
                 className={`h-7 w-7 ${email.isStarred ? 'text-amber-500' : 'text-muted-foreground'}`}
+                onClick={handleStarClick}
               >
                 <Star className="h-4 w-4" />
               </Button>
               <div className="flex items-center whitespace-nowrap">
                 <Clock className="h-3 w-3 mr-1" />
-                {formatDistanceToNow(email.date, { addSuffix: true })}
+                {formatDistanceToNow(new Date(email.date), { addSuffix: true })}
               </div>
             </div>
           </div>
