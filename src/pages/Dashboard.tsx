@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCcw, Search, Filter, Inbox, Star, Send, Archive, Trash2, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useEmails, useEmail, useSyncEmails, useMarkEmailAsRead } from '@/services/emailService';
+import { useEmails, useEmail, useSyncEmails, useMarkEmailAsRead, useToggleStarEmail } from '@/services/emailService';
 import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
@@ -38,6 +38,9 @@ const Dashboard = () => {
   
   // Mark email as read mutation
   const { mutate: markAsRead } = useMarkEmailAsRead();
+  
+  // Toggle star mutation
+  const { mutate: toggleStar } = useToggleStarEmail();
   
   // Filter emails based on search query
   const filteredEmails = emails.filter(email => {
@@ -73,6 +76,12 @@ const Dashboard = () => {
         });
       }
     });
+  };
+  
+  // Handle toggling star status
+  const handleToggleStar = (emailId: string, isStarred: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleStar({ id: emailId, isStarred });
   };
   
   // Handle closing email detail view
@@ -197,8 +206,12 @@ const Dashboard = () => {
                         <div 
                           key={email.id} 
                           onClick={() => handleEmailSelect(email.id)}
+                          className="cursor-pointer"
                         >
-                          <EmailCard email={email} />
+                          <EmailCard 
+                            email={email}
+                            onStarToggle={(e) => handleToggleStar(email.id, !email.isStarred, e)}
+                          />
                         </div>
                       ))}
                     </div>

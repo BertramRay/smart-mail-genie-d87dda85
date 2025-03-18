@@ -285,15 +285,15 @@ const fetchEmails = async (category: string = 'inbox'): Promise<Email[]> => {
   // Filter emails based on category
   return mockEmails.filter(email => {
     switch(category) {
-      case 'starred':
+      case "starred":
         return email.isStarred;
-      case 'sent':
+      case "sent":
         return false; // In a real app, we'd have a property to identify sent emails
-      case 'archived':
+      case "archived":
         return false; // Same for archived
-      case 'trash':
+      case "trash":
         return false; // Same for trash
-      case 'inbox':
+      case "inbox":
       default:
         return true;
     }
