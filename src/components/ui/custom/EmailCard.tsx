@@ -17,23 +17,17 @@ interface EmailCardProps {
       avatar?: string;
     };
     subject: string;
-    preview: string;
+    preview?: string;
     date: Date;
     isRead: boolean;
     isStarred: boolean;
     labels?: string[];
     aiSummary?: string;
   };
+  onStarToggle: (e: React.MouseEvent) => void;
 }
 
-export const EmailCard: React.FC<EmailCardProps> = ({ email }) => {
-  const { mutate: toggleStar } = useToggleStarEmail();
-  
-  const handleStarClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the card click from triggering
-    toggleStar({ id: email.id, isStarred: !email.isStarred });
-  };
-  
+export const EmailCard: React.FC<EmailCardProps> = ({ email, onStarToggle }) => {
   return (
     <Card 
       className={`
@@ -59,22 +53,24 @@ export const EmailCard: React.FC<EmailCardProps> = ({ email }) => {
                 variant="ghost" 
                 size="icon" 
                 className={`h-7 w-7 ${email.isStarred ? 'text-amber-500' : 'text-muted-foreground'}`}
-                onClick={handleStarClick}
+                onClick={onStarToggle}
               >
                 <Star className="h-4 w-4" />
               </Button>
               <div className="flex items-center whitespace-nowrap">
                 <Clock className="h-3 w-3 mr-1" />
-                {formatDistanceToNow(new Date(email.date), { addSuffix: true })}
+                {formatDistanceToNow(email.date, { addSuffix: true })}
               </div>
             </div>
           </div>
           
           <div className="font-medium mt-1 truncate">{email.subject}</div>
           
-          <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
-            {email.preview}
-          </div>
+          {email.preview && (
+            <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              {email.preview}
+            </div>
+          )}
           
           {email.aiSummary && (
             <div className="mt-2 p-2 bg-secondary/50 text-sm rounded-md border border-border">

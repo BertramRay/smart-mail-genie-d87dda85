@@ -209,7 +209,16 @@ const Dashboard = () => {
                           className="cursor-pointer"
                         >
                           <EmailCard 
-                            email={email}
+                            email={{
+                              id: email.id,
+                              sender: email.sender,
+                              subject: email.subject,
+                              preview: email.preview,
+                              date: new Date(email.timestamp),
+                              isRead: email.isRead,
+                              isStarred: email.isStarred,
+                              labels: email.labels
+                            }}
                             onStarToggle={(e) => handleToggleStar(email.id, !email.isStarred, e)}
                           />
                         </div>
