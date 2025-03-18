@@ -30,6 +30,17 @@ configPassport(passport);
 // API路由
 app.use('/api', routes);
 
+// 健康检查端点
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date(),
+    uptime: process.uptime()
+  });
+});
+
+
+
 // 在生产环境中提供静态文件
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../client/build')));

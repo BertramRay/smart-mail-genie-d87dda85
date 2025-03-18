@@ -1,7 +1,9 @@
+// 首先加载环境变量
+require('dotenv').config();
+
 const http = require('http');
 const { Server } = require('socket.io');
 const app = require('./app');
-require('dotenv').config();
 
 // 创建HTTP服务器
 const server = http.createServer(app);
