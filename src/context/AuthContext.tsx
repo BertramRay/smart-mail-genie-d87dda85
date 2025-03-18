@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { authService, User as ApiUser } from '@/services/apiService';
 
 interface User {
   id: string;
@@ -35,46 +35,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
   useEffect(() => {
-    // Check for saved user in localStorage
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Failed to parse user from localStorage:', error);
-        localStorage.removeItem('user');
+    // 验证token并获取当前用户信息
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsLoading(false);
+        return;
       }
-    }
-    setIsLoading(false);
+      
+      try {
+        const response = await authService.getCurrentUser();
+        if (response.success && response.user) {
+          const apiUser = response.user;
+          const formattedUser: User = {
+            id: apiUser.id,
+            name: apiUser.name,
+            email: apiUser.email,
+            avatarUrl: apiUser.avatar
+          };
+          setUser(formattedUser);
+        } else {
+          // Token无效，清除本地存储
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      } catch (error) {
+        console.error('Failed to verify authentication:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
   }, []);
   
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, this would call an API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await authService.login(email, password);
       
-      // Mock successful login
-      const mockUser: User = {
-        id: '1',
-        name: 'Test User',
-        email,
-        avatarUrl: 'https://github.com/shadcn.png',
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      
-      toast({
-        title: 'Login successful',
-        description: 'Welcome back!',
-      });
+      if (response.success && response.token && response.user) {
+        const formattedUser: User = {
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          avatarUrl: response.user.avatar
+        };
+        
+        setUser(formattedUser);
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(formattedUser));
+        
+        toast({
+          title: '登录成功',
+          description: '欢迎回来！',
+        });
+      } else {
+        throw new Error(response.message || '登录失败');
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast({
         variant: 'destructive',
-        title: 'Login failed',
-        description: error instanceof Error ? error.message : 'Failed to login. Please try again.',
+        title: '登录失败',
+        description: error instanceof Error ? error.message : '登录失败，请重试。',
       });
       throw error;
     } finally {
@@ -85,33 +111,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGitHub = async () => {
     setIsLoading(true);
     try {
-      // In a real app, this would redirect to GitHub OAuth
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 构建完整的GitHub OAuth URL，确保它指向代理后的正确路径
+      const apiBaseURL = import.meta.env.VITE_API_URL || '/api';
+      const githubAuthURL = `${apiBaseURL}/auth/github`;
       
-      // Mock successful GitHub login
-      const mockUser: User = {
-        id: '2',
-        name: 'GitHub User',
-        email: 'github@example.com',
-        avatarUrl: 'https://github.com/shadcn.png',
-      };
+      console.log('Redirecting to GitHub OAuth:', githubAuthURL);
+      window.location.href = githubAuthURL;
       
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      
-      toast({
-        title: 'GitHub login successful',
-        description: 'Welcome back!',
-      });
+      // 注意：这个函数下面的代码不会立即执行，因为用户被重定向了
+      // 用户会从GitHub重定向回来，带着授权码，后端处理后会将用户重定向到前端并带上token
     } catch (error) {
       console.error('GitHub login error:', error);
       toast({
         variant: 'destructive',
-        title: 'GitHub login failed',
-        description: error instanceof Error ? error.message : 'Failed to login with GitHub. Please try again.',
+        title: 'GitHub登录失败',
+        description: error instanceof Error ? error.message : '无法使用GitHub登录，请重试。',
       });
-      throw error;
-    } finally {
       setIsLoading(false);
     }
   };
@@ -119,22 +134,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (firstName: string, lastName: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, this would call an API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const fullName = `${firstName} ${lastName}`.trim();
+      const response = await authService.register(fullName, email, password);
       
-      // Mock successful signup
-      toast({
-        title: 'Account created',
-        description: 'Your account has been created successfully.',
-      });
-      
-      // Note: For our mock app, we don't automatically log the user in after signup
+      if (response.success && response.token && response.user) {
+        const formattedUser: User = {
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          avatarUrl: response.user.avatar
+        };
+        
+        setUser(formattedUser);
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(formattedUser));
+        
+        toast({
+          title: '注册成功',
+          description: '欢迎加入Smart Mail Genie！',
+        });
+      } else {
+        throw new Error(response.message || '注册失败');
+      }
     } catch (error) {
       console.error('Signup error:', error);
       toast({
         variant: 'destructive',
-        title: 'Signup failed',
-        description: error instanceof Error ? error.message : 'Failed to create account. Please try again.',
+        title: '注册失败',
+        description: error instanceof Error ? error.message : '无法完成注册，请重试。',
       });
       throw error;
     } finally {
@@ -144,25 +171,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     toast({
-      title: 'Logged out',
-      description: 'You have been logged out successfully.',
+      title: '已退出登录',
     });
   };
   
-  const authContextValue: AuthContextType = {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
-    login,
-    loginWithGitHub,
-    signup,
-    logout,
-  };
-  
   return (
-    <AuthContext.Provider value={authContextValue}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        isAuthenticated: !!user,
+        login,
+        loginWithGitHub,
+        signup,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

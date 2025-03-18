@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -42,9 +41,14 @@ export const HeroSection = () => {
         <div className="relative mx-auto max-w-4xl animate-fadeIn opacity-0" style={{ animationDelay: '0.6s' }}>
           <div className="glass rounded-xl overflow-hidden shadow-xl">
             <img 
-              src="https://cdn.pixabay.com/photo/2023/02/15/05/53/clean-email-app-ui-7790892_1280.jpg" 
+              src="/images/dashboard-preview.png" 
               alt="Smart Mail Genie Dashboard Preview" 
               className="w-full h-auto object-cover" 
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "https://placehold.co/1200x800/5f57ff/ffffff?text=Smart+Mail+Genie+Dashboard";
+                target.onerror = null;
+              }}
             />
           </div>
           

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -23,7 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, loginWithGitHub, isLoading: authLoading } = useAuth();
   const [isEmailFormVisible, setIsEmailFormVisible] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -35,62 +35,27 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    
     try {
-      // In a real app, this would call an API to authenticate the user
-      console.log('Login form submitted:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await login(data.email, data.password);
       
       toast({
-        title: 'Login successful!',
-        description: 'Redirecting to your dashboard...',
+        title: '登录成功!',
+        description: '正在跳转到您的仪表盘...',
       });
       
-      // Navigate to dashboard after successful login
       setTimeout(() => {
         navigate('/dashboard');
       }, 1000);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Login failed',
-        description: 'Please check your credentials and try again.',
-      });
-    } finally {
-      setIsLoading(false);
+      // 错误已在AuthContext中处理
     }
   };
 
   const handleGitHubLogin = async () => {
-    setIsLoading(true);
-    
     try {
-      // In a real app, this would initiate OAuth flow with GitHub
-      console.log('GitHub login initiated');
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: 'GitHub login successful!',
-        description: 'Redirecting to your dashboard...',
-      });
-      
-      // Navigate to dashboard after successful login
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+      await loginWithGitHub();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'GitHub login failed',
-        description: 'Please try again later.',
-      });
-    } finally {
-      setIsLoading(false);
+      // 错误已在AuthContext中处理
     }
   };
 
@@ -116,9 +81,9 @@ const Login = () => {
               className="w-full" 
               size="lg" 
               onClick={handleGitHubLogin}
-              disabled={isLoading}
+              disabled={authLoading}
             >
-              {isLoading ? (
+              {authLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Github className="mr-2 h-5 w-5" />
@@ -145,7 +110,7 @@ const Login = () => {
                           <Input 
                             placeholder="your.email@example.com" 
                             {...field} 
-                            disabled={isLoading}
+                            disabled={authLoading}
                           />
                         </FormControl>
                         <FormMessage />
@@ -164,7 +129,7 @@ const Login = () => {
                             type="password" 
                             placeholder="Enter your password" 
                             {...field} 
-                            disabled={isLoading}
+                            disabled={authLoading}
                           />
                         </FormControl>
                         <FormMessage />
@@ -176,9 +141,9 @@ const Login = () => {
                     type="submit" 
                     className="w-full" 
                     size="lg" 
-                    disabled={isLoading}
+                    disabled={authLoading}
                   >
-                    {isLoading && (
+                    {authLoading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
                     Sign in
@@ -192,7 +157,7 @@ const Login = () => {
                   size="lg" 
                   className="w-full"
                   onClick={() => setIsEmailFormVisible(true)}
-                  disabled={isLoading}
+                  disabled={authLoading}
                 >
                   Sign in with Email
                 </Button>

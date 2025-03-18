@@ -15,10 +15,18 @@ connectDB();
 
 const app = express();
 
+// CORS配置
+const corsOptions = {
+  origin: ['http://localhost:8080', 'http://localhost:5173', process.env.FRONTEND_URL].filter(Boolean),
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
 // 中间件
 app.use(helmet()); // 安全头
 app.use(compression()); // 压缩响应
-app.use(cors()); // 跨域
+app.use(cors(corsOptions)); // 跨域
 app.use(morgan('dev')); // 日志
 app.use(express.json({ limit: '10mb' })); // 解析JSON请求体
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // 解析URL编码的请求体
@@ -33,13 +41,11 @@ app.use('/api', routes);
 // 健康检查端点
 app.get('/api/health', (req, res) => {
   res.json({
-    status: 'OK',
+    status: 'ok',
     timestamp: new Date(),
     uptime: process.uptime()
   });
 });
-
-
 
 // 在生产环境中提供静态文件
 if (process.env.NODE_ENV === 'production') {

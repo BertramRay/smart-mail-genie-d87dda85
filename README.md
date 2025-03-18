@@ -1,69 +1,127 @@
-# Welcome to your Lovable project
+# Smart Mail Genie
 
-## Project info
+Smart Mail Genie是一个智能邮件管理系统，使用AI进行分析和处理邮件，提高邮件处理效率。
 
-**URL**: https://lovable.dev/projects/6ccdf06a-3adf-45a2-977f-098b042686a1
+## 技术栈
 
-## How can I edit this code?
+### 前端
+- React
+- TypeScript
+- Vite
+- TailwindCSS
+- Shadcn UI组件库
+- React Query
 
-There are several ways of editing your application.
+### 后端
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- JWT认证
+- OpenAI API
 
-**Use Lovable**
+## 开发环境设置
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6ccdf06a-3adf-45a2-977f-098b042686a1) and start prompting.
+### 前提条件
+- Node.js 18+
+- MongoDB
+- OpenAI API密钥
 
-Changes made via Lovable will be committed automatically to this repo.
+### 安装依赖
 
-**Use your preferred IDE**
+1. 安装前端依赖：
+```bash
+npm install
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. 安装后端依赖：
+```bash
+cd server
+npm install
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 环境配置
 
-Follow these steps:
+1. 前端配置：
+复制`.env.example`为`.env.local`并根据需要修改环境变量。
+```bash
+cp .env.example .env.local
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. 后端配置：
+复制`server/.env.example`为`server/.env`并填写必要的环境变量。
+```bash
+cd server
+cp .env.example .env
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+确保在`.env`文件中设置以下必要变量：
+- `MONGODB_URI`: MongoDB连接URL
+- `JWT_SECRET`: JWT签名密钥
+- `OPENAI_API_KEY`: OpenAI API密钥
+- `PORT`: 服务器端口，默认5001
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 运行应用
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+#### 开发模式（单独运行）
+
+1. 运行后端服务器：
+```bash
+cd server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+2. 在另一个终端运行前端开发服务器：
+```bash
+npm run dev
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+#### 开发模式（并行运行前后端）
 
-**Use GitHub Codespaces**
+使用concurrently同时运行前端和后端：
+```bash
+npm run dev:all
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+#### 生产模式
 
-## What technologies are used for this project?
+1. 构建前端应用：
+```bash
+npm run build
+```
 
-This project is built with .
+2. 运行生产模式服务器：
+```bash
+cd server
+npm start
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## API测试
 
-## How can I deploy this project?
+可以使用内置的API测试脚本测试后端API：
+```bash
+cd server
+node test-api.js
+```
 
-Simply open [Lovable](https://lovable.dev/projects/6ccdf06a-3adf-45a2-977f-098b042686a1) and click on Share -> Publish.
+## 特性
 
-## I want to use a custom domain - is that possible?
+- 用户认证（注册、登录、JWT授权）
+- 邮箱连接和同步
+- 智能邮件分析
+- 个性化规则创建
+- 邮件自动分类与处理
+- 重要邮件提醒
+- 智能回复建议
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## 贡献指南
+
+1. Fork项目
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 创建Pull Request
+
+## 许可证
+
+[MIT](LICENSE)
