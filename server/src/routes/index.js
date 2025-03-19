@@ -14,6 +14,14 @@ router.get('/health', (req, res) => {
 
 // API 路由
 router.use('/auth', authRoutes);
+// 特殊处理：为了适配环境变量中的回调URL设置
+// router.use('/auth/github/callback', (req, res, next) => {
+//   console.log('index.js接收到GitHub回调:', req.originalUrl);
+//   req.url = req.url.replace('/callback', '');
+//   req.baseUrl = '/api/auth/github';
+//   next();
+// }, authRoutes);
+
 router.use('/users', userRoutes);
 router.use('/mailboxes', mailboxRoutes);
 router.use('/emails', emailRoutes);

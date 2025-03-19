@@ -5,10 +5,23 @@ const helmet = require('helmet');
 const compression = require('compression');
 const passport = require('passport');
 const path = require('path');
+const fs = require('fs');
 const routes = require('./routes');
 const errorHandler = require('./middleware/error.middleware');
 const connectDB = require('./config/db');
 const configPassport = require('./config/passport');
+
+// 创建日志目录
+const logDir = path.join(__dirname, '../logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
+
+// 创建日志流
+const accessLogStream = fs.createWriteStream(
+  path.join(logDir, 'access.log'),
+  { flags: 'a' }
+);
 
 // 连接数据库
 connectDB();
@@ -17,7 +30,15 @@ const app = express();
 
 // CORS配置
 const corsOptions = {
-  origin: ['http://localhost:8080', 'http://localhost:5173', process.env.FRONTEND_URL].filter(Boolean),
+  origin: [
+    'http://localhost:8080', 
+    'http://localhost:5173', 
+    'http://localhost:5001',
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5001',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204,
@@ -27,7 +48,8 @@ const corsOptions = {
 app.use(helmet()); // 安全头
 app.use(compression()); // 压缩响应
 app.use(cors(corsOptions)); // 跨域
-app.use(morgan('dev')); // 日志
+app.use(morgan('dev')); // 控制台日志
+app.use(morgan('combined', { stream: accessLogStream })); // 文件日志
 app.use(express.json({ limit: '10mb' })); // 解析JSON请求体
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // 解析URL编码的请求体
 

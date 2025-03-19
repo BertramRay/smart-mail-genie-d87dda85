@@ -15,7 +15,8 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         secure: false,
         ws: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        // 不再重写路径，保持/api前缀
+        // rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   },

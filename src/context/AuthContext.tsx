@@ -111,23 +111,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGitHub = async () => {
     setIsLoading(true);
     try {
-      // 构建完整的GitHub OAuth URL，确保它指向代理后的正确路径
+      // 使用代理URL而不是直接重定向
       const apiBaseURL = import.meta.env.VITE_API_URL || '/api';
-      const githubAuthURL = `${apiBaseURL}/auth/github`;
       
-      console.log('Redirecting to GitHub OAuth:', githubAuthURL);
+      // 先发送一个请求检查GitHub OAuth是否配置正确
+      try {
+        console.log('检查GitHub OAuth配置状态...');
+        const testResponse = await fetch(`${apiBaseURL}/auth/github/status`, { 
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!testResponse.ok) {
+          let errorMessage = 'GitHub OAuth配置错误';
+          try {
+            const errorData = await testResponse.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            console.error('解析错误响应失败:', e);
+          }
+          throw new Error(errorMessage);
+        }
+
+        const statusData = await testResponse.json();
+        console.log('GitHub OAuth状态:', statusData);
+        
+        if (!statusData.configured) {
+          throw new Error('GitHub OAuth尚未正确配置');
+        }
+      } catch (error) {
+        console.error('GitHub OAuth验证失败:', error);
+        throw error;
+      }
+      
+      // 如果测试通过，则重定向到GitHub OAuth登录
+      const githubAuthURL = `${apiBaseURL}/auth/github`;
+      console.log('重定向到GitHub OAuth:', githubAuthURL);
+      
+      // 在新窗口中打开GitHub授权页面
       window.location.href = githubAuthURL;
       
       // 注意：这个函数下面的代码不会立即执行，因为用户被重定向了
-      // 用户会从GitHub重定向回来，带着授权码，后端处理后会将用户重定向到前端并带上token
     } catch (error) {
-      console.error('GitHub login error:', error);
+      console.error('GitHub登录错误:', error);
       toast({
         variant: 'destructive',
         title: 'GitHub登录失败',
         description: error instanceof Error ? error.message : '无法使用GitHub登录，请重试。',
       });
       setIsLoading(false);
+      throw error; // 重新抛出错误以便调用者处理
     }
   };
   

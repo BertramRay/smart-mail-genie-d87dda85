@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Github, Mail, Loader2 } from 'lucide-react';
+import { Github, Mail, Loader2, ExternalLink } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +25,26 @@ const Login = () => {
   const navigate = useNavigate();
   const { login, loginWithGitHub, isLoading: authLoading } = useAuth();
   const [isEmailFormVisible, setIsEmailFormVisible] = useState(false);
+  const [isGitHubLoading, setIsGitHubLoading] = useState(false);
+
+  // 检测GitHub登录是否正在加载
+  useEffect(() => {
+    // 如果用户点击了GitHub登录按钮但后端处理时间超过10秒，显示友好提示
+    let timeoutId: NodeJS.Timeout;
+    
+    if (isGitHubLoading) {
+      timeoutId = setTimeout(() => {
+        toast({
+          title: '登录时间较长',
+          description: 'GitHub登录过程可能需要一些时间，请耐心等待',
+        });
+      }, 10000);
+    }
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [isGitHubLoading, toast]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -53,9 +73,32 @@ const Login = () => {
 
   const handleGitHubLogin = async () => {
     try {
+      setIsGitHubLoading(true);
       await loginWithGitHub();
     } catch (error) {
       // 错误已在AuthContext中处理
+      setIsGitHubLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    try {
+      // 模拟用户
+      const mockUser = {
+        id: 'demo-user-123',
+        name: 'Demo User',
+        email: 'demo@example.com',
+        avatarUrl: 'https://ui-avatars.com/api/?name=Demo+User&background=6366f1&color=fff'
+      };
+      
+      // 存储模拟数据
+      localStorage.setItem('token', 'demo-token-123');
+      localStorage.setItem('user', JSON.stringify(mockUser));
+      
+      // 刷新页面以应用登录状态
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error('Demo login error:', error);
     }
   };
 
@@ -81,15 +124,27 @@ const Login = () => {
               className="w-full" 
               size="lg" 
               onClick={handleGitHubLogin}
-              disabled={authLoading}
+              disabled={authLoading || isGitHubLoading}
             >
-              {authLoading ? (
+              {(authLoading || isGitHubLoading) ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Github className="mr-2 h-5 w-5" />
               )}
-              Continue with GitHub
+              {isGitHubLoading ? "正在连接GitHub..." : "Continue with GitHub"}
             </Button>
+            
+            {import.meta.env.DEV && (
+              <Button 
+                className="w-full" 
+                size="lg"
+                variant="secondary"
+                onClick={handleDemoLogin}
+              >
+                <ExternalLink className="mr-2 h-5 w-5" />
+                开发模式：直接登录
+              </Button>
+            )}
             
             <div className="flex items-center">
               <Separator className="flex-1" />

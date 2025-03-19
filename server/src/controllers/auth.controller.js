@@ -4,23 +4,48 @@ const { generateToken } = require('../utils/jwt.utils');
 
 // GitHub OAuth 登录回调
 exports.githubCallback = (req, res, next) => {
+  // 打印请求参数
+  console.log('GitHub回调请求参数:', {
+    code: req.query.code,
+    state: req.query.state,
+    error: req.query.error,
+    url: req.url
+  });
+  
   passport.authenticate('github', { session: false }, (err, user, info) => {
+    console.log('GitHub回调处理:', { 
+      userId: user?._id, 
+      hasError: !!err, 
+      errorMessage: err?.message,
+      info,
+      authInfo: info
+    });
+    
     if (err) {
-      return next(err);
+      console.error('GitHub授权错误详情:', {
+        message: err.message,
+        stack: err.stack,
+        code: err.code
+      });
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=github_auth_failed&message=${encodeURIComponent(err.message || '授权失败')}`);
     }
     
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'GitHub 授权失败',
-      });
+      console.error('GitHub授权失败，未返回用户', { info });
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user_returned`);
     }
     
-    // 生成 JWT 令牌
-    const token = generateToken(user._id);
-    
-    // 重定向到前端，带上令牌
-    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+    try {
+      // 生成 JWT 令牌
+      const token = generateToken(user._id);
+      console.log('生成的JWT令牌:', { token: token.substring(0, 10) + '...', userId: user._id });
+      
+      // 重定向到前端，带上令牌
+      return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+    } catch (tokenError) {
+      console.error('生成JWT令牌错误:', tokenError);
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=token_generation_failed`);
+    }
   })(req, res, next);
 };
 
